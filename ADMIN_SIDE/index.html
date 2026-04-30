@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCECC — Admin POS System</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"/>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <!-- MOBILE TOP BAR -->
+  <div class="mobile-topbar">
+    <button class="hamburger-btn" id="hamburger-btn">
+      <span class="material-symbols-rounded" style="font-size:1.6rem">menu</span>
+    </button>
+    <div class="mobile-logo"><img src="LOGO.png" alt="GCECC"></div>
+    <div style="width:40px"></div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="header-logo"><img src="LOGO.png" alt="GCECC Logo"></a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <ul class="nav-list">
+
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="dashboard-section">
+            <span class="nav-icon material-symbols-rounded">dashboard</span>
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="pos-section">
+            <span class="nav-icon material-symbols-rounded">box</span>
+            Inventory
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="view-category-section">
+            <span class="nav-icon material-symbols-rounded">ad_group</span>
+            Categories
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="view-product-section">
+            <span class="nav-icon material-symbols-rounded">inventory_2</span>
+            Products
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="label-section">
+            <span class="nav-icon material-symbols-rounded">barcode</span>
+            Product Labels
+          </a>
+        </li>
+
+      </ul>
+
+      <div class="nav-section-label">Account</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="#" class="nav-link nav-btn" data-target="users-section">
+            <span class="nav-icon material-symbols-rounded">manage_accounts</span>
+            Manage Users
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="secondary-nav">
+      <div class="sidebar-footer-info">
+        <strong>GCECC Admin</strong><br>
+        Gordon College · Olongapo City<br>
+        <span id="sidebar-logged-user" style="color:var(--green);font-weight:600"></span>
+      </div>
+      <button class="nav-link logout-btn" onclick="handleLogout()">
+        <span class="nav-icon material-symbols-rounded">logout</span>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- Desktop top bar -->
+    <div class="top-bar">
+      <div class="top-bar-title" id="page-title"><span>Dashboard</span></div>
+    </div>
+
+    <div class="content-wrap">
+
+      <!-- ═══════════════════════════════════
+           DASHBOARD
+           ═══════════════════════════════════ -->
+      <div id="dashboard-section" class="content-section active">
+
+        <!-- Hero -->
+        <div class="hero-banner">
+          <div class="hero-title">GCECC Admin Dashboard</div>
+          <div class="hero-sub">Gordon College Employees Consumers Cooperative — POS System</div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="dash-products">0</span>
+              <span class="hero-stat-lbl">Products</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="dash-categories">0</span>
+              <span class="hero-stat-lbl">Categories</span>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="dash-lowstock">0</span>
+              <span class="hero-stat-lbl">Low Stock</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat cards (no Total Sales, no Weekly Sales) -->
+        <div class="stats-grid">
+          <div class="stat-card green">
+            <div class="stat-icon"><span class="material-symbols-rounded">inventory_2</span></div>
+            <div class="stat-info">
+              <h3>Products</h3>
+              <p id="dash-prod-card">0</p>
+              <small>In store</small>
+            </div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon"><span class="material-symbols-rounded">ad_group</span></div>
+            <div class="stat-info">
+              <h3>Categories</h3>
+              <p id="dash-cat-card">0</p>
+              <small>Active</small>
+            </div>
+          </div>
+          <div class="stat-card red" id="low-stock-card" style="cursor:pointer" title="Click to see items that need refilling">
+            <div class="stat-icon"><span class="material-symbols-rounded">warning</span></div>
+            <div class="stat-info">
+              <h3>Low Stock</h3>
+              <p id="dash-low-card">0</p>
+              <small>Need reorder</small>
+            </div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-icon"><span class="material-symbols-rounded">receipt_long</span></div>
+            <div class="stat-info">
+              <h3>Transactions</h3>
+              <p id="dash-tx-card">0</p>
+              <small>Total completed</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pie chart only (no bar chart) -->
+        <div class="chart-container">
+          <h3>Product Distribution by Category</h3>
+          <p>Number of products per category</p>
+          <div class="pie-chart-wrapper">
+            <canvas id="productChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Items Sold — with calendar filter + export -->
+        <div class="section-header">
+          <div class="section-title">
+            <span class="material-symbols-rounded">shopping_bag</span> Items Sold
+          </div>
+        </div>
+
+        <!-- Calendar date picker + export -->
+        <div class="tx-filter-bar">
+          <div class="tx-date-wrap">
+            <span class="material-symbols-rounded" style="color:var(--text-muted);font-size:1.1rem">calendar_today</span>
+            <input type="date" id="tx-date-picker" onchange="refreshDashboard()">
+            <button class="btn btn-outline btn-sm" onclick="setTxDateToday()">Today</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="exportToExcel()">
+            <span class="material-symbols-rounded" style="font-size:1rem">download</span> Export Excel
+          </button>
+        </div>
+
+        <!-- Items sold table: OR#, Product, Qty, Unit Price, Total, Date, Time -->
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>OR #</th>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="items-sold-tbody">
+                <tr><td colspan="7">
+                  <div class="empty-state">
+                    <span class="material-symbols-rounded">shopping_bag</span>
+                    No items sold on this date
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /dashboard-section -->
+
+
+      <!-- ═══════════════════════════════════
+           POS
+           ═══════════════════════════════════ -->
+      <div id="pos-section" class="content-section">
+        <div class="pos-layout">
+
+          <!-- LEFT: Products -->
+          <div class="pos-products-panel">
+            <div class="pos-search-bar">
+              <span class="material-symbols-rounded" style="color:#aaa;font-size:1.2rem;flex-shrink:0">search</span>
+              <input type="text" id="pos-search" placeholder="Search product or barcode..."
+                oninput="posSearch(this.value)">
+              <button class="btn btn-primary btn-sm">
+                <span class="material-symbols-rounded" style="font-size:1rem">barcode_scanner</span>
+              </button>
+            </div>
+            <div class="pos-category-tabs" id="pos-cat-tabs">
+              <div class="cat-tab active" onclick="posFilterCategory('', this)">All</div>
+            </div>
+            <div class="pos-product-grid" id="pos-product-grid"></div>
+          </div>
+
+          <!-- RIGHT: Cart (Order) -->
+          <div class="pos-cart-panel">
+            <div class="cart-header">
+              <h3><span class="material-symbols-rounded">shopping_cart</span> Order</h3>
+              <span class="cart-count-badge" id="cart-count">0 item(s)</span>
+            </div>
+
+            <!-- Cart items - bigger, no member dropdown, no summary lines -->
+            <div class="cart-items-list" id="cart-items-list">
+              <div class="empty-state" id="cart-empty-msg">
+                <span class="material-symbols-rounded">shopping_cart</span>
+                Tap a product to add it
+              </div>
+            </div>
+
+            <!-- No subtotal / discount / total lines -->
+            <div class="cart-action-btns">
+              <button class="pay-now-btn" onclick="proceedOrder()">
+                <span class="material-symbols-rounded">check_circle</span> Proceed
+              </button>
+              <button class="clear-cart-btn" onclick="clearCart()">
+                <span class="material-symbols-rounded">delete</span> Clear Order
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /pos-section -->
+
+
+      <!-- ═══════════════════════════════════
+           CATEGORIES — VIEW
+           ═══════════════════════════════════ -->
+      <div id="view-category-section" class="content-section">
+
+        <div class="section-hero" style="background:linear-gradient(135deg,var(--green-dark),var(--green))">
+          <div class="section-hero-title">Categories</div>
+          <div class="section-hero-sub">Manage product categories</div>
+        </div>
+
+        <div class="flex-between">
+          <div class="table-search-bar">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" placeholder="Search categories..." oninput="filterCategories(this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('add-category-section')">
+            <span class="material-symbols-rounded" style="font-size:1rem">add</span> Add Category
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>Name</th><th>Description</th><th>Products</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="category-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-category-section -->
+
+
+      <!-- ═══════════════════════════════════
+           CATEGORIES — ADD
+           ═══════════════════════════════════ -->
+      <div id="add-category-section" class="content-section">
+        <div class="section-hero" style="background:linear-gradient(135deg,var(--green-dark),var(--green))">
+          <div class="section-hero-title">Add Category</div>
+          <div class="section-hero-sub">Create a new product category</div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">
+            <span class="material-symbols-rounded">ad_group</span> Category Details
+          </div>
+          <div class="form-group">
+            <label>Category Name *</label>
+            <input type="text" id="cat-name-input" placeholder="e.g. PE Uniforms">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="cat-desc-input" placeholder="Short description (optional)">
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-primary" onclick="saveCategory()">
+              <span class="material-symbols-rounded" style="font-size:1rem">save</span> Save Category
+            </button>
+            <button class="btn btn-outline" onclick="navigateTo('view-category-section')">← Back</button>
+          </div>
+        </div>
+      </div><!-- /add-category-section -->
+
+
+      <!-- ═══════════════════════════════════
+           PRODUCTS — VIEW
+           ═══════════════════════════════════ -->
+      <div id="view-product-section" class="content-section">
+        <div class="section-hero" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)">
+          <div class="section-hero-title">Products</div>
+          <div class="section-hero-sub">All products in the store</div>
+        </div>
+        <div class="flex-between">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="table-search-bar">
+              <span class="material-symbols-rounded">search</span>
+              <input type="text" placeholder="Search products..." oninput="filterProducts(this.value)">
+            </div>
+            <select id="prod-cat-filter" onchange="filterProducts()"
+              style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:.82rem;outline:none;">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('add-product-section')">
+            <span class="material-symbols-rounded" style="font-size:1rem">add</span> Add Product
+          </button>
+        </div>
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Barcode</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="product-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /view-product-section -->
+
+
+      <!-- ═══════════════════════════════════
+           PRODUCTS — ADD
+           ═══════════════════════════════════ -->
+      <div id="add-product-section" class="content-section">
+        <div class="section-hero" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)">
+          <div class="section-hero-title">Add Product</div>
+          <div class="section-hero-sub">Add a new item to the store inventory</div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">
+            <span class="material-symbols-rounded">inventory_2</span> Product Details
+          </div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Product Name *</label>
+              <input type="text" id="prod-name" placeholder="e.g. PE Jogging Pants (M)">
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="prod-cat"><option value="">Select category</option></select>
+            </div>
+            <div class="form-group">
+              <label>Unit of Measure</label>
+              <select id="prod-unit">
+                <option>pcs</option><option>set</option><option>kg</option><option>g</option>
+                <option>L</option><option>mL</option><option>pack</option><option>box</option><option>can</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Price (₱) *</label>
+              <input type="number" id="prod-price" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label>Stock Quantity *</label>
+              <input type="number" id="prod-stock" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>Low Stock Alert At</label>
+              <input type="number" id="prod-lowstock" placeholder="5" min="0">
+            </div>
+            <div class="form-group">
+              <label>Barcode</label>
+              <input type="text" id="prod-barcode" placeholder="Leave blank to auto-generate">
+            </div>
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea id="prod-desc" placeholder="Optional product details..."></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-primary" onclick="saveProduct()">
+              <span class="material-symbols-rounded" style="font-size:1rem">save</span> Save Product
+            </button>
+            <button class="btn btn-outline" onclick="navigateTo('view-product-section')">← Back</button>
+          </div>
+        </div>
+      </div><!-- /add-product-section -->
+
+
+      <!-- ═══════════════════════════════════
+           PRODUCT LABELS
+           ═══════════════════════════════════ -->
+      <div id="label-section" class="content-section">
+        <div class="section-hero" style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid))">
+          <div class="section-hero-title">Product Labels</div>
+          <div class="section-hero-sub">Generate scannable barcodes for your products</div>
+        </div>
+
+        <!-- Controls: Category filter + Product filter + Search + Print -->
+        <div class="label-controls">
+          <div class="label-control-group">
+            <label>Category</label>
+            <select id="label-cat-filter" onchange="onLabelCatChange()">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <div class="label-control-group">
+            <label>Product</label>
+            <select id="label-product-filter" onchange="renderLabels()">
+              <option value="">All Products</option>
+            </select>
+          </div>
+          <div class="label-control-group" style="flex:2">
+            <label>Search</label>
+            <div class="table-search-bar" style="height:38px">
+              <span class="material-symbols-rounded">search</span>
+              <input type="text" id="label-search" placeholder="Search product name..." oninput="onLabelSearch()">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="printLabels()" style="align-self:flex-end">
+            <span class="material-symbols-rounded" style="font-size:1rem">print</span> Print
+          </button>
+        </div>
+
+        <div class="label-grid" id="label-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:60px;color:#aaa;">
+            <span class="material-symbols-rounded" style="font-size:3rem;display:block;margin-bottom:10px;color:#ddd">barcode</span>
+            Loading labels...
+          </div>
+        </div>
+      </div><!-- /label-section -->
+
+
+      <!-- ═══════════════════════════════════
+           MANAGE USERS
+           ═══════════════════════════════════ -->
+      <div id="users-section" class="content-section">
+        <div class="section-hero" style="background:linear-gradient(135deg,#1e1b4b,#7c3aed)">
+          <div class="section-hero-title">Manage Users</div>
+          <div class="section-hero-sub">Add or remove admin login accounts</div>
+        </div>
+
+        <div class="notice-banner">
+          <span class="material-symbols-rounded">info</span>
+          <span>All accounts created here have full admin access. The default <strong>admin</strong> account cannot be deleted.</span>
+        </div>
+
+        <!-- Add User Form -->
+        <div class="form-card" style="max-width:500px">
+          <div class="form-card-title">
+            <span class="material-symbols-rounded">person_add</span> Add New User
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="new-user-name" placeholder="e.g. Juan dela Cruz">
+            </div>
+            <div class="form-group">
+              <label>Username *</label>
+              <input type="text" id="new-user-username" placeholder="e.g. juandc">
+            </div>
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" id="new-user-password" placeholder="Min. 6 characters">
+            </div>
+            <div class="form-group">
+              <label>Confirm Password *</label>
+              <input type="password" id="new-user-confirm" placeholder="Re-enter password">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveNewUser()">
+            <span class="material-symbols-rounded" style="font-size:1rem">person_add</span> Add User
+          </button>
+        </div>
+
+        <!-- Users List -->
+        <div class="section-header" style="margin-top:8px">
+          <div class="section-title">
+            <span class="material-symbols-rounded">group</span> Current Users
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>Name</th><th>Username</th><th>Role</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /users-section -->
+
+
+      <footer class="site-footer">
+        © 2025 Gordon College Employees Consumers Cooperative (GCECC) &nbsp;·&nbsp;
+        Gordon College, Olongapo City, Zambales &nbsp;·&nbsp; Admin POS System
+      </footer>
+
+    </div><!-- /content-wrap -->
+  </main>
+
+  <button class="back-to-top" id="back-to-top">
+    <span class="material-symbols-rounded">arrow_upward</span>
+  </button>
+
+
+  <!-- LOW STOCK MODAL -->
+  <div class="modal-overlay" id="low-stock-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3> Low Stock Items</h3>
+        <span class="modal-close material-symbols-rounded" onclick="closeModal('low-stock-modal')">close</span>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
+        These items need restocking. Items at 0 are out of stock.
+      </p>
+      <div id="low-stock-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Official Receipt</h3>
+        <span class="modal-close material-symbols-rounded" onclick="closeModal('receipt-modal')">close</span>
+      </div>
+      <div id="receipt-content" class="receipt-box"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="window.print()">
+          <span class="material-symbols-rounded" style="font-size:1rem">print</span> Print
+        </button>
+        <button class="btn btn-outline" onclick="clearCart()">New Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PRODUCT MODAL -->
+  <div class="modal-overlay" id="edit-product-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Edit Product</h3>
+        <span class="modal-close material-symbols-rounded" onclick="closeModal('edit-product-modal')">close</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Product Name</label>
+          <input type="text" id="ep-name">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="ep-cat"></select>
+        </div>
+        <div class="form-group">
+          <label>Price (₱)</label>
+          <input type="number" id="ep-price" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" id="ep-stock">
+        </div>
+      </div>
+      <input type="hidden" id="ep-id">
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="btn btn-primary" onclick="updateProduct()">
+          <span class="material-symbols-rounded" style="font-size:1rem">save</span> Update
+        </button>
+        <button class="btn btn-outline" onclick="closeModal('edit-product-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT CATEGORY MODAL -->
+  <div class="modal-overlay" id="edit-category-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Edit Category</h3>
+        <span class="modal-close material-symbols-rounded" onclick="closeModal('edit-category-modal')">close</span>
+      </div>
+      <div class="form-group">
+        <label>Category Name</label>
+        <input type="text" id="ec-name">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="ec-desc">
+      </div>
+      <input type="hidden" id="ec-id">
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="btn btn-primary" onclick="updateCategory()">
+          <span class="material-symbols-rounded" style="font-size:1rem">save</span> Update
+        </button>
+        <button class="btn btn-outline" onclick="closeModal('edit-category-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
+    <span id="toast-message">Done!</span>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-box" style="max-width:360px;text-align:center">
+      <div style="margin-bottom:16px">
+        <span class="material-symbols-rounded" style="font-size:3rem;color:var(--red)">logout</span>
+      </div>
+      <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:8px">Logout?</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:24px">
+        Are you sure you want to logout of the GCECC Admin POS?
+      </p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-danger" onclick="confirmLogout()">
+          <span class="material-symbols-rounded" style="font-size:1rem">logout</span> Yes, Logout
+        </button>
+        <button class="btn btn-outline" onclick="closeModal('logout-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal-overlay" id="change-pw-modal">
+    <div class="modal-box" style="max-width:380px">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <span class="modal-close material-symbols-rounded" onclick="closeModal('change-pw-modal')">close</span>
+      </div>
+      <input type="hidden" id="cpw-username">
+      <div class="form-group">
+        <label>New Password *</label>
+        <input type="password" id="cpw-new" placeholder="Min. 6 characters">
+      </div>
+      <div class="form-group">
+        <label>Confirm New Password *</label>
+        <input type="password" id="cpw-confirm" placeholder="Re-enter new password">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-primary" onclick="saveChangePw()">
+          <span class="material-symbols-rounded" style="font-size:1rem">save</span> Save
+        </button>
+        <button class="btn btn-outline" onclick="closeModal('change-pw-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH + USER MANAGEMENT SCRIPT -->
+  <script>
+  /**
+   * AUTH GUARD
+   * ✅ BACKEND SWAP: Replace sessionStorage check with
+   *    a server-side session/token validation via fetch().
+   */
+  (function authGuard() {
+    const session = sessionStorage.getItem('gcecc_session');
+    if (!session) {
+      window.location.href = 'login.html';
+    } else {
+      const user = JSON.parse(session);
+      const el = document.getElementById('sidebar-logged-user');
+      if (el) el.textContent = '👤 ' + (user.name || user.username);
+    }
+  })();
+
+  // ── USER STORE (localStorage) ─────────────────────────────
+  // ✅ BACKEND SWAP: Replace all localStorage calls with fetch() API calls.
+
+  function getUsers() {
+    try {
+      const raw = localStorage.getItem('gcecc_users');
+      return raw ? JSON.parse(raw) : getDefaultUsers();
+    } catch { return getDefaultUsers(); }
+  }
+
+  function getDefaultUsers() {
+    return [{ username: 'admin', password: 'gcecc2025', role: 'admin', name: 'Administrator' }];
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem('gcecc_users', JSON.stringify(users));
+  }
+
+  // Initialize users in localStorage if not yet set
+  if (!localStorage.getItem('gcecc_users')) {
+    saveUsers(getDefaultUsers());
+  }
+
+  // ── RENDER USERS TABLE ────────────────────────────────────
+  function renderUsersTable() {
+    const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
+    const users = getUsers();
+    tbody.innerHTML = users.map((u, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${u.name}</strong></td>
+        <td class="mono">${u.username}</td>
+        <td><span class="pill ${u.role === 'admin' ? 'pill-success' : 'pill-info'}">${u.role}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="openChangePw('${u.username}')">
+            <span class="material-symbols-rounded" style="font-size:.9rem">key</span>
+          </button>
+          ${u.username !== 'admin' ? `
+          <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteUser('${u.username}')">
+            <span class="material-symbols-rounded" style="font-size:.9rem">delete</span>
+          </button>` : ''}
+        </td>
+      </tr>`).join('');
+  }
+
+  // ── ADD NEW USER ──────────────────────────────────────────
+  function saveNewUser() {
+    const name     = document.getElementById('new-user-name').value.trim();
+    const username = document.getElementById('new-user-username').value.trim().toLowerCase();
+    const password = document.getElementById('new-user-password').value;
+    const confirm  = document.getElementById('new-user-confirm').value;
+
+    if (!name || !username || !password) {
+      showToast('Please fill in all fields.', 'error'); return;
+    }
+    if (password.length < 6) {
+      showToast('Password must be at least 6 characters.', 'error'); return;
+    }
+    if (password !== confirm) {
+      showToast('Passwords do not match!', 'error'); return;
+    }
+
+    const users = getUsers();
+    if (users.find(u => u.username === username)) {
+      showToast('Username already exists!', 'error'); return;
+    }
+
+    users.push({ username, password, role: 'admin', name });
+    saveUsers(users);
+    renderUsersTable();
+
+    // Clear form
+    ['new-user-name','new-user-username','new-user-password','new-user-confirm']
+      .forEach(id => document.getElementById(id).value = '');
+
+    showToast(`User "${name}" added!`, 'success');
+  }
+
+  // ── DELETE USER ───────────────────────────────────────────
+  function deleteUser(username) {
+    if (username === 'admin') { showToast('Cannot delete the admin account.', 'error'); return; }
+
+    // Don't let logged-in user delete themselves
+    const session = JSON.parse(sessionStorage.getItem('gcecc_session') || '{}');
+    if (session.username === username) {
+      showToast('You cannot delete your own account!', 'error'); return;
+    }
+
+    const users = getUsers().filter(u => u.username !== username);
+    saveUsers(users);
+    renderUsersTable();
+    showToast('User deleted.', 'success');
+  }
+
+  // ── CHANGE PASSWORD ───────────────────────────────────────
+  function openChangePw(username) {
+    document.getElementById('cpw-username').value = username;
+    document.getElementById('cpw-new').value = '';
+    document.getElementById('cpw-confirm').value = '';
+    openModal('change-pw-modal');
+  }
+
+  function saveChangePw() {
+    const username = document.getElementById('cpw-username').value;
+    const newPw    = document.getElementById('cpw-new').value;
+    const confirm  = document.getElementById('cpw-confirm').value;
+
+    if (!newPw || newPw.length < 6) {
+      showToast('Password must be at least 6 characters.', 'error'); return;
+    }
+    if (newPw !== confirm) {
+      showToast('Passwords do not match!', 'error'); return;
+    }
+
+    const users = getUsers();
+    const user  = users.find(u => u.username === username);
+    if (user) user.password = newPw;
+    saveUsers(users);
+    closeModal('change-pw-modal');
+    showToast('Password updated!', 'success');
+  }
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  function handleLogout() { openModal('logout-modal'); }
+
+  function confirmLogout() {
+    sessionStorage.removeItem('gcecc_session');
+    // ✅ BACKEND SWAP: also call fetch('/api/logout') here
+    window.location.href = 'login.html';
+  }
+
+  // ── HOOK INTO navigateTo FOR USERS SECTION ────────────────
+  const _origNavigateTo = navigateTo;
+  // Patch: render users table when that section opens
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (this.getAttribute('data-target') === 'users-section') {
+          setTimeout(renderUsersTable, 50);
+        }
+      });
+    });
+  });
+  </script>
+
+</body>
+</html>
