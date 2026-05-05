@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCECC — Admin Login</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"/>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /*  LOGIN PAGE STYLES  */
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #064e3b 0%, #097969 60%, #10b981 100%);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background decorative circles */
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    body::before { width: 400px; height: 400px; top: -120px; right: -80px; }
+    body::after  { width: 300px; height: 300px; bottom: -100px; left: -60px; }
+
+    .login-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .login-logo img {
+      width: 130px;
+    }
+
+    .login-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .login-sub {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .login-form .form-group { margin-bottom: 16px; }
+
+    .input-icon-wrap {
+      position: relative;
+    }
+    .input-icon-wrap .material-symbols-rounded {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .input-icon-wrap input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .input-icon-wrap input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(9,121,105,0.1);
+    }
+
+    /* Show/hide password toggle */
+    .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      transition: color 0.2s;
+      pointer-events: all;
+    }
+    .toggle-pw:hover { color: var(--green); }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .login-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(9,121,105,0.4);
+    }
+    .login-btn:active { transform: scale(0.98); }
+
+    .login-error {
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #dc2626;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .login-error.show { display: flex; }
+
+    .login-footer {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+    .login-footer strong { color: var(--green); }
+
+    /* Loading spinner on button */
+    .spin {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+
+    <div class="login-logo">
+      <img src="LOGO.png" alt="GCECC Logo">
+    </div>
+    <div class="login-title">Admin Portal</div>
+    <div class="login-sub">Gordon College Employees Consumers Cooperative</div>
+
+    <!-- Error message -->
+    <div class="login-error" id="login-error">
+      <span class="material-symbols-rounded" style="font-size:1rem;flex-shrink:0">error</span>
+      <span id="login-error-msg">Invalid username or password.</span>
+    </div>
+
+    <div class="login-form">
+      <!-- Username -->
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-icon-wrap">
+          <span class="material-symbols-rounded">person</span>
+          <input type="text" id="login-username" placeholder="Enter username"
+            autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-icon-wrap">
+          <span class="material-symbols-rounded"></span>
+          <input type="password" id="login-password" placeholder="Enter password"
+            autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+          <span class="toggle-pw material-symbols-rounded" onclick="togglePw()" id="pw-eye">visibility</span>
+        </div>
+      </div>
+
+      <button class="login-btn" onclick="doLogin()" id="login-btn">
+        <div class="spin" id="login-spin"></div>
+        <span class="material-symbols-rounded" style="font-size:1.1rem" id="login-icon">login</span>
+        <span id="login-label">Login</span>
+      </button>
+    </div>
+
+    <div class="login-footer">
+      <strong>GCECC</strong> · Gordon College, Olongapo City, Zambales<br>
+      Mon–Fri · 8:00 AM – 5:00 PM
+    </div>
+  </div>
+
+  <script>
+    /**
+     * auth.js logic (inline for login page)
+     *
+     * BACKEND READY:
+     *    Replace the local `users` array check with a fetch() call:
+     *
+     *    const res = await fetch('/api/login', {
+     *      method: 'POST',
+     *      headers: { 'Content-Type': 'application/json' },
+     *      body: JSON.stringify({ username, password })
+     *    });
+     *    const data = await res.json();
+     *    if (data.success) { ... redirect ... }
+     */
+
+    // ── Load users from localStorage (set by admin in index.html) ──
+    function getUsers() {
+      try {
+        const raw = localStorage.getItem('gcecc_users');
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+
+    // Default admin if no users have been created yet
+    function resolveUsers() {
+      const saved = getUsers();
+      if (saved && saved.length) return saved;
+      // Fallback default admin
+      return [{ username: 'admin', password: 'gcecc2025', role: 'admin', name: 'Administrator' }];
+    }
+
+    function togglePw() {
+      const input = document.getElementById('login-password');
+      const eye   = document.getElementById('pw-eye');
+      if (input.type === 'password') {
+        input.type = 'text';
+        eye.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        eye.textContent = 'visibility';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('login-error');
+      document.getElementById('login-error-msg').textContent = msg;
+      el.classList.add('show');
+      // Shake animation
+      el.style.animation = 'none';
+      setTimeout(() => el.style.animation = '', 10);
+    }
+
+    function setLoading(on) {
+      document.getElementById('login-spin').style.display = on ? 'block' : 'none';
+      document.getElementById('login-icon').style.display = on ? 'none' : '';
+      document.getElementById('login-label').textContent  = on ? 'Logging in...' : 'Login';
+      document.getElementById('login-btn').disabled = on;
+    }
+
+    async function doLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      document.getElementById('login-error').classList.remove('show');
+
+      if (!username || !password) {
+        showError('Please enter both username and password.');
+        return;
+      }
+
+      setLoading(true);
+
+      // Simulate network delay (remove when using real backend)
+      await new Promise(r => setTimeout(r, 600));
+
+      /* ── BACKEND SWAP POINT ──────────────────────────────────
+         Replace the block below with:
+
+         const res = await fetch('/api/login', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ username, password })
+         });
+         const data = await res.json();
+         if (!data.success) { showError(data.message || 'Invalid credentials.'); setLoading(false); return; }
+         sessionStorage.setItem('gcecc_session', JSON.stringify({ username: data.username, name: data.name, role: data.role }));
+         window.location.href = 'index.html';
+      ─────────────────────────────────────────────────────── */
+
+      const users = resolveUsers();
+      const match = users.find(u => u.username === username && u.password === password);
+
+      if (!match) {
+        setLoading(false);
+        showError('Invalid username or password. Please try again.');
+        document.getElementById('login-password').value = '';
+        return;
+      }
+
+      // Save session
+      sessionStorage.setItem('gcecc_session', JSON.stringify({
+        username: match.username,
+        name:     match.name,
+        role:     match.role,
+      }));
+
+      // Redirect to admin
+      window.location.href = 'index.html';
+    }
+
+    // If already logged in, skip login page
+    if (sessionStorage.getItem('gcecc_session')) {
+      window.location.href = 'index.html';
+    }
+
+    // Focus username on load
+    window.addEventListener('load', () => {
+      document.getElementById('login-username').focus();
+    });
+  </script>
+</body>
+</html>
